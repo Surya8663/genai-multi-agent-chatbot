@@ -12,4 +12,10 @@ unstructured
 google-generativeai
 langchain-google-genai
 requests
+langgraph
 tavily-python
+ragas
+pandas
+datasets
+langchain-groq
+Pillow
