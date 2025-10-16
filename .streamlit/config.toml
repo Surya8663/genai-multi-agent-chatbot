@@ -1,0 +1,17 @@
+# .streamlit/config.toml
+
+[theme]
+# A professional blue for interactive elements
+primaryColor="#0068c9"
+
+# A clean, off-white background
+backgroundColor="#FFFFFF"
+
+# A slightly different color for containers
+secondaryBackgroundColor="#F0F2F6"
+
+# The color for all the text in the app
+textColor="#0a0a0a"  # A dark, near-black color
+
+# The font for the app
+font="sans serif"

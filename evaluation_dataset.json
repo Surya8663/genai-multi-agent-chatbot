@@ -1,0 +1,32 @@
+[
+  {
+    "question": "What is LangGraph?"
+  },
+  {
+    "question": "How does Retrieval-Augmented Generation work?"
+  },
+  {
+    "question": "What is the main difference between LangChain and LangGraph?"
+  },
+  {
+    "question": "Explain the concept of a vector database."
+  },
+  {
+    "question": "What role does an embedding model play in RAG?"
+  },
+  {
+    "question": "Summarize the key features of the LLaMA 3 model."
+  },
+  {
+    "question": "How can LangSmith be used to evaluate LLM applications?"
+  },
+  {
+    "question": "What is a state machine in the context of LangGraph?"
+  },
+  {
+    "question": "Why is reducing hallucinations important for LLMs?"
+  },
+  {
+    "question": "Describe a practical use case for a RAG-based chatbot."
+  }
+]
