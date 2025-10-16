@@ -1,4 +1,4 @@
-# src/app.py (THE FINAL, ALL-IN-ONE, GUARANTEED-TO-WORK VERSION)
+# src/app.py (THE FINAL, ALL-IN-ONE, CLOUD-READY VERSION)
 import os
 import streamlit as st
 from typing import TypedDict, Optional, List, Dict, Any
@@ -14,23 +14,26 @@ from langgraph.graph import StateGraph, END
 from langchain_community.tools.tavily_search import TavilySearchResults
 
 # --- 1. SETUP & CONSTANTS ---
-# This loads your .env file with your API keys
+# This will load your .env file locally, and Streamlit Secrets when deployed
 load_dotenv()
 
+# Load all necessary API keys and URLs from environment variables/secrets
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 TAVILY_API_KEY = os.getenv("TAVILY_API_KEY")
+QDRANT_URL = os.getenv("QDRANT_URL")
+QDRANT_API_KEY = os.getenv("QDRANT_API_KEY")
 
-if not GROQ_API_KEY or not TAVILY_API_KEY:
-    st.error("API keys for Groq and Tavily must be set in your .env file. The app cannot start.")
+# Check if all required secrets are present, otherwise stop the app
+if not all([GROQ_API_KEY, TAVILY_API_KEY, QDRANT_URL, QDRANT_API_KEY]):
+    st.error("Missing one or more required API keys or URL in your secrets. The app cannot start.")
     st.stop()
 
-# Set the keys for the libraries to use
+# Set the keys for the libraries that need them in the environment
 os.environ["GROQ_API_KEY"] = GROQ_API_KEY
-os.environ["TAVILY_API_KEY"] = TAVILY_API_KEY
+os.environ["TAVILY_API_KEY"] TAVILY_API_KEY
 
 EMBED_MODEL = "all-MiniLM-L6-v2"
 COLLECTION_NAME = "kira_knowledge_base"
-QDRANT_URL = "http://localhost:6333"
 LLM_MODEL = "llama-3.1-8b-instant"
 
 # --- AGENT LOGIC ---
@@ -39,21 +42,24 @@ LLM_MODEL = "llama-3.1-8b-instant"
 class GraphState(TypedDict):
     chat_history: List[Dict[str, Any]]; question: str; documents: Optional[List[Document]] = None; answer: Optional[str] = None; clarifying_questions: Optional[str] = None
 
-# This decorator caches the agent so it doesn't reload on every interaction.
+# This decorator caches the agent so it doesn't have to rebuild on every interaction
 @st.cache_resource
 def get_agent_app():
     # 3. INITIALIZE COMPONENTS
     llm = ChatGroq(model_name=LLM_MODEL, temperature=0.7)
     router_llm = ChatGroq(model_name=LLM_MODEL, temperature=0.0)
     embeddings = HuggingFaceEmbeddings(model_name=EMBED_MODEL)
-    client = QdrantClient(url=QDRANT_URL)
+    # UPDATED: Initialize QdrantClient with cloud URL and API key
+    client = QdrantClient(url=QDRANT_URL, api_key=QDRANT_API_KEY)
     qdrant_store = Qdrant(client=client, collection_name=COLLECTION_NAME, embeddings=embeddings)
     retriever = qdrant_store.as_retriever(search_kwargs={"k": 3})
     web_search_tool = TavilySearchResults(k=3)
 
     def format_chat_history(chat_history: List[Dict[str, Any]]) -> str:
-        buffer = "";
-        for message in chat_history: buffer += f'{"Human" if message["role"] == "user" else "AI"}: {message["content"]}\n'
+        buffer = ""
+        for message in chat_history:
+            role = "Human" if message["role"] == "user" else "AI"
+            buffer += f'{role}: {message["content"]}\n'
         return buffer
 
     # 4. PROMPTS AND CHAINS
@@ -113,17 +119,11 @@ if "messages" not in st.session_state or not st.session_state.messages:
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
-        if "context" in message and "context" in message and message["context"]:
+        if "context" in message and message["context"]:
             with st.expander("See Sources"):
-                # Handle both list of dicts and list of Document objects
                 for doc in message["context"]:
-                    if isinstance(doc, dict):
-                        st.info(f"Source: {doc.get('metadata', {}).get('source', 'N/A')}")
-                        st.markdown(f"> {doc.get('page_content', '')}")
-                    else: # Fallback for Document objects if they appear
-                        st.info(f"Source: {doc.metadata.get('source', 'N/A')}")
-                        st.markdown(f"> {doc.page_content}")
-
+                    st.info(f"Source: {doc.get('metadata', {}).get('source', 'N/A')}")
+                    st.markdown(f"> {doc.get('page_content', '')}")
 
 if prompt := st.chat_input("What are you looking into?"):
     st.session_state.messages.append({"role": "user", "content": prompt})
@@ -139,7 +139,6 @@ if prompt := st.chat_input("What are you looking into?"):
             assistant_message = {}
             if result.get("answer"):
                 response_text = result["answer"]; assistant_message = {"role": "assistant", "content": response_text};
-                # Ensure context is stored in a JSON-serializable format
                 if result.get("documents"): assistant_message["context"] = [doc.dict() for doc in result.get("documents", [])]
             elif result.get("clarifying_questions"):
                 response_text = result["clarifying_questions"]; assistant_message = {"role": "assistant", "content": response_text}

@@ -1,9 +1,15 @@
 # src/ingest.py
 import os
+from dotenv import load_dotenv
 from langchain_community.document_loaders import DirectoryLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_qdrant import Qdrant
+load_dotenv()
+QDRANT_URL = os.getenv("QDRANT_URL")
+QDRANT_API_KEY = os.getenv("QDRANT_API_KEY")
+if not QDRANT_URL or not QDRANT_API_KEY:
+    raise ValueError("Please add QDRANT_URL and QDRANT_API_KEY to your .env file")
 
 # Define the path to the data directory
 DATA_PATH = "data/"
@@ -44,7 +50,8 @@ def main():
     Qdrant.from_documents(
         documents=chunks,
         embedding=embeddings,
-        url="http://localhost:6333",  # URL of your running Qdrant instance
+        url=QDRANT_URL,
+	api_key=QDRANT_API_KEY,  # URL of your running Qdrant instance
         collection_name=COLLECTION_NAME,
         force_recreate=True # Use True to start with a fresh collection each time
     )
