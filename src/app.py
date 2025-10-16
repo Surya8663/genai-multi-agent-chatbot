@@ -30,7 +30,7 @@ if not all([GROQ_API_KEY, TAVILY_API_KEY, QDRANT_URL, QDRANT_API_KEY]):
 
 # Set the keys for the libraries that need them in the environment
 os.environ["GROQ_API_KEY"] = GROQ_API_KEY
-os.environ["TAVILY_API_KEY"] TAVILY_API_KEY
+os.environ["TAVILY_API_KEY"] = TAVILY_API_KEY
 
 EMBED_MODEL = "all-MiniLM-L6-v2"
 COLLECTION_NAME = "kira_knowledge_base"
