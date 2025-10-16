@@ -1,40 +1,41 @@
-# src/check_env.py
 import os
 from dotenv import load_dotenv
 
-print("--- Starting Environment Check ---")
+print("--- Starting .env File Check ---")
 
-# 1. Print the current directory to see where the script is running from
+# 1. Check where the script is running and if the .env file exists
 cwd = os.getcwd()
-print(f"Current Working Directory: {cwd}")
-
-# 2. Check if the .env file exists in this directory
+print(f"1. Current Directory: {cwd}")
 env_path = os.path.join(cwd, '.env')
-print(f"Looking for .env file at: {env_path}")
+print(f"   Looking for .env file at: {env_path}")
 if os.path.exists(env_path):
-    print(">>> SUCCESS: .env file FOUND!")
+    print("   [SUCCESS] .env file FOUND.")
 else:
-    print(">>> FAILURE: .env file NOT FOUND in this directory.")
-    print(">>> Please make sure your .env file is in the main 'genai-multi-agent-chatbot' folder.")
+    print("   [FAILURE] .env file NOT FOUND in this directory.")
+    print("      -> FIX: Make sure your .env file is in the main 'genai-multi-agent-chatbot' folder, NOT inside 'src'.")
 
-# 3. Try to load the .env file
+# 2. Try to load the file
 load_successful = load_dotenv()
 if load_successful:
-    print(">>> SUCCESS: dotenv loaded the file.")
+    print("2. [SUCCESS] The dotenv library was able to load the file.")
 else:
-    print(">>> WARNING: dotenv did not load the file (this can happen if the file is empty).")
+    print("2. [FAILURE] The dotenv library could NOT load the file. This often means the file is empty or has formatting errors.")
 
+# 3. Check for the specific keys
+print("3. Checking for the API keys:")
+groq_key = os.getenv("GROQ_API_KEY")
+tavily_key = os.getenv("TAVILY_API_KEY")
 
-# 4. Check for the specific environment variable
-api_key = os.environ.get("GOOGLE_API_KEY")
-
-print("\n--- Checking for the GOOGLE_API_KEY variable ---")
-if api_key:
-    print(">>> SUCCESS: The GOOGLE_API_KEY was loaded successfully!")
-    # Let's print the first 5 and last 5 characters to confirm it's not empty
-    print(f"   Loaded Key starts with: '{api_key[:5]}' and ends with: '{api_key[-5:]}'")
+if groq_key:
+    print("   [SUCCESS] Found the GROQ_API_KEY.")
 else:
-    print(">>> FAILURE: The GOOGLE_API_KEY could NOT be loaded from the environment.")
-    print(">>> This means the variable name is likely misspelled in your .env file or the file is empty.")
+    print("   [FAILURE] Could NOT find the GROQ_API_KEY.")
+    print("      -> FIX: Make sure the line 'GROQ_API_KEY=\"...\"' exists and is spelled correctly.")
 
-print("\n--- End of Check ---")
+if tavily_key:
+    print("   [SUCCESS] Found the TAVILY_API_KEY.")
+else:
+    print("   [FAILURE] Could NOT find the TAVILY_API_KEY.")
+    print("      -> FIX: Make sure the line 'TAVILY_API_KEY=\"...\"' exists and is spelled correctly.")
+
+print("\n--- Check Complete ---")

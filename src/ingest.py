@@ -10,7 +10,7 @@ DATA_PATH = "data/"
 # Define the path to the embedding model
 EMBED_MODEL = "all-MiniLM-L6-v2"
 # Define the Qdrant collection name
-COLLECTION_NAME = "alex_knowledge_base"
+COLLECTION_NAME = "kira_knowledge_base"
 
 def main():
     """
